@@ -1,0 +1,44 @@
+# Sample mixed log file for testing Cyber Threat Log Parser
+# Contains normal traffic + multiple threat types
+
+# === Apache/Nginx Combined Log Format entries ===
+192.168.1.100 - - [14/May/2026:10:15:22 +0000] "GET / HTTP/1.1" 200 1234 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+192.168.1.101 - - [14/May/2026:10:15:25 +0000] "GET /products?id=5 HTTP/1.1" 200 5678 "-" "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
+10.0.0.50 - - [14/May/2026:10:16:01 +0000] "GET /admin/login.php?user=admin' OR '1'='1 HTTP/1.1" 401 234 "-" "sqlmap/1.6.12#stable (http://sqlmap.org)"
+10.0.0.50 - - [14/May/2026:10:16:03 +0000] "GET /admin/login.php?user=admin' UNION SELECT null,null,null HTTP/1.1" 401 234 "-" "sqlmap/1.6.12#stable (http://sqlmap.org)"
+10.0.0.50 - - [14/May/2026:10:16:05 +0000] "GET /admin/login.php?user=admin' DROP TABLE users; -- HTTP/1.1" 401 234 "-" "sqlmap/1.6.12#stable (http://sqlmap.org)"
+192.168.1.102 - - [14/May/2026:10:17:12 +0000] "GET /search?q=<script>alert(document.cookie)</script> HTTP/1.1" 200 890 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"
+192.168.1.103 - - [14/May/2026:10:18:45 +0000] "GET /download?file=../../../etc/passwd HTTP/1.1" 403 456 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0"
+192.168.1.104 - - [14/May/2026:10:19:30 +0000] "GET /.env HTTP/1.1" 404 78 "-" "Mozilla/5.0 (compatible; Nmap Scripting Engine; https://nmap.org/book/nse.html)"
+192.168.1.105 - - [14/May/2026:10:20:00 +0000] "POST /wp-login.php HTTP/1.1" 401 321 "-" "Mozilla/5.0 (compatible; Acunetix/1.0)"
+# High volume scanner from same IP
+10.0.0.77 - - [14/May/2026:10:21:00 +0000] "GET / HTTP/1.1" 200 1024 "-" "gobuster/3.6"
+10.0.0.77 - - [14/May/2026:10:21:01 +0000] "GET /admin HTTP/1.1" 403 512 "-" "gobuster/3.6"
+10.0.0.77 - - [14/May/2026:10:21:02 +0000] "GET /backup HTTP/1.1" 404 89 "-" "gobuster/3.6"
+10.0.0.77 - - [14/May/2026:10:21:03 +0000] "GET /config.php HTTP/1.1" 404 67 "-" "gobuster/3.6"
+10.0.0.77 - - [14/May/2026:10:21:04 +0000] "GET /wp-admin HTTP/1.1" 403 445 "-" "gobuster/3.6"
+10.0.0.77 - - [14/May/2026:10:21:05 +0000] "GET /shell.php HTTP/1.1" 404 12 "-" "gobuster/3.6"
+# Rapid requests (automation)
+10.0.0.88 - - [14/May/2026:10:22:00 +0000] "GET /api/v1/users HTTP/1.1" 200 3456 "-" "python-requests/2.31.0"
+10.0.0.88 - - [14/May/2026:10:22:00.3 +0000] "GET /api/v1/products HTTP/1.1" 200 2345 "-" "python-requests/2.31.0"
+10.0.0.88 - - [14/May/2026:10:22:00.6 +0000] "GET /api/v1/orders HTTP/1.1" 200 1234 "-" "python-requests/2.31.0"
+10.0.0.88 - - [14/May/2026:10:22:00.9 +0000] "GET /api/v1/settings HTTP/1.1" 403 89 "-" "python-requests/2.31.0"
+
+# === Syslog / auth.log style (SSH brute force) ===
+May 14 10:25:11 webserver sshd[12345]: Failed password for invalid user admin from 203.0.113.50 port 52341 ssh2
+May 14 10:25:12 webserver sshd[12346]: Failed password for invalid user root from 203.0.113.50 port 52342 ssh2
+May 14 10:25:13 webserver sshd[12347]: Failed password for invalid user test from 203.0.113.50 port 52343 ssh2
+May 14 10:25:14 webserver sshd[12348]: Failed password for invalid user deploy from 203.0.113.50 port 52344 ssh2
+May 14 10:25:15 webserver sshd[12349]: Failed password for invalid user ubuntu from 203.0.113.50 port 52345 ssh2
+May 14 10:25:16 webserver sshd[12350]: Failed password for invalid user pi from 203.0.113.50 port 52346 ssh2
+May 14 10:26:01 webserver sshd[12351]: Failed password for invalid user admin from 198.51.100.42 port 44123 ssh2
+May 14 10:26:02 webserver sshd[12352]: Failed password for invalid user root from 198.51.100.42 port 44124 ssh2
+
+# === JSON structured log example (modern app / Cloud / K8s style) ===
+{"timestamp":"2026-05-14T10:30:00.123Z","client_ip":"185.220.101.1","method":"POST","uri":"/api/login","status":401,"user_agent":"Mozilla/5.0 (compatible; Nikto/2.5.0)","message":"Authentication failed for user 'admin' with payload: {\"user\":\"admin' OR 1=1 --\"}"}
+{"timestamp":"2026-05-14T10:30:05.456Z","client_ip":"185.220.101.1","method":"GET","uri":"/api/users?id=1' UNION SELECT username,password FROM users --","status":500,"user_agent":"sqlmap/1.6","message":"SQL error triggered"}
+{"@timestamp":"2026-05-14T10:31:00Z","source_ip":"10.0.0.99","http_method":"GET","url_path":"/download?file=..%2F..%2Fetc%2Fshadow","http_status":403,"http_user_agent":"dirbuster v1.0","event":"Path traversal attempt blocked by WAF"}
+
+# === Normal traffic mixed in ===
+192.168.1.200 - - [14/May/2026:10:35:00 +0000] "GET /blog/post-42 HTTP/1.1" 200 8765 "-" "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"
+10.10.10.10 - - [14/May/2026:10:36:22 +0000] "GET /health HTTP/1.1" 200 45 "-" "Prometheus/2.45.0"
